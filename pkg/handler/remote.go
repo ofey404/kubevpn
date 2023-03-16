@@ -17,7 +17,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/fields"
@@ -172,17 +171,6 @@ func CreateOutboundPod(ctx context.Context, factory cmdutil.Factory, clientset *
 		return nil, err
 	}
 
-	var Resources = v1.ResourceRequirements{
-		Requests: map[v1.ResourceName]resource.Quantity{
-			v1.ResourceCPU:    resource.MustParse("1000m"),
-			v1.ResourceMemory: resource.MustParse("1024Mi"),
-		},
-		Limits: map[v1.ResourceName]resource.Quantity{
-			v1.ResourceCPU:    resource.MustParse("2000m"),
-			v1.ResourceMemory: resource.MustParse("2048Mi"),
-		},
-	}
-
 	domain := util.GetTlsDomain(namespace)
 	var crt, key []byte
 	crt, key, err = cert.GenerateSelfSignedCertKey(domain, nil, nil)
@@ -283,7 +271,6 @@ kubevpn serve -L "tcp://:10800" -L "tun://:8422?net=${TrafficManagerIP}" --debug
 								ContainerPort: 10800,
 								Protocol:      v1.ProtocolTCP,
 							}},
-							Resources:       Resources,
 							ImagePullPolicy: v1.PullIfNotPresent,
 							SecurityContext: &v1.SecurityContext{
 								Capabilities: &v1.Capabilities{
@@ -314,7 +301,6 @@ kubevpn serve -L "tcp://:10800" -L "tun://:8422?net=${TrafficManagerIP}" --debug
 								},
 							},
 							ImagePullPolicy: v1.PullIfNotPresent,
-							Resources:       Resources,
 						},
 						{
 							Name:    "webhook",
@@ -335,7 +321,6 @@ kubevpn serve -L "tcp://:10800" -L "tun://:8422?net=${TrafficManagerIP}" --debug
 							}},
 							Env:             []v1.EnvVar{},
 							ImagePullPolicy: v1.PullIfNotPresent,
-							Resources:       Resources,
 						},
 					},
 					RestartPolicy:     v1.RestartPolicyAlways,
